@@ -14,9 +14,14 @@ namespace APIOrientacao.Data.Context
         { }
 
         public DbSet<Pessoa> Pessoa { get; set; }
+        public DbSet<Aluno> Aluno { get; set; }
+        public DbSet<Curso> Curso { get; set; }
 
-        public void PessoaMB(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.ForSqlServerUseIdentityColumns();
+            modelBuilder.HasDefaultSchema("dbo");
+
             modelBuilder.Entity<Pessoa>(e =>
             {
                 e.ToTable("Pessoa");
@@ -28,14 +33,42 @@ namespace APIOrientacao.Data.Context
                 .IsRequired()
                 .HasMaxLength(300);
             });
-        }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ForSqlServerUseIdentityColumns();
-            modelBuilder.HasDefaultSchema("dbo");
+            modelBuilder.Entity<Curso>(e =>
+            {
+                e.ToTable("Curso");
+                e.HasKey(c => c.IdCurso).HasName("IdCurso");
+                e.Property(c => c.IdCurso).HasColumnName("IdCurso")
+                     .ValueGeneratedOnAdd();
 
-            PessoaMB(modelBuilder);
+                e.Property(c => c.Nome).HasColumnName("Nome")
+                     .IsRequired()
+                     .HasMaxLength(150);
+            });
+
+            modelBuilder.Entity<Aluno>(e =>
+            {
+                e.ToTable("Aluno");
+                e.HasKey(c => c.IdPessoa).HasName("IdPessoa");
+                e.Property(c => c.IdPessoa).HasColumnName("IdPessoaAluno").IsRequired();
+                e.Property(c => c.IdCurso).HasColumnName("IdCurso").IsRequired();
+
+                e.Property(c => c.Matricula).HasColumnName("Matricula").
+                IsRequired().HasMaxLength(8);
+
+                e.Property(c => c.RegistroAtivo).HasColumnName("RegistroAtivo").
+                IsRequired();
+
+                e.HasOne(d => d.Pessoa)
+                .WithOne(p => p.Aluno)
+                .HasForeignKey<Aluno>(d => d.IdPessoa)
+                .HasConstraintName("PFK_PessoaAluno");
+
+                e.HasOne(d => d.Curso)
+                .WithMany(p => p.Alunos)
+                .HasForeignKey(d => d.IdCurso)
+                .HasConstraintName("FK_CursoAluno");
+            });
         }
     }
 }

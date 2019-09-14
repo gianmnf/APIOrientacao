@@ -1,0 +1,9 @@
+Add-Migration InitialMigration
+Update-Database 20190817002811_InitialMigration
+
+apagar
+Remove-Migration
+Update-Database 0
+ApiOrientacao -> Dependencias -> ApiOrientacao.data
+Dependencias:
+SwashBuckle.AspNetCore
